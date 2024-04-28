@@ -1,0 +1,153 @@
+package tp2.view;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import tp2.controller.ManageLogs;
+import tp2.model.Log;
+import tp2.model.User;
+
+/**
+ * Class that represents the main program
+ */
+public class Server {
+
+    private static User loggedUser;
+
+    /**
+     * Main function to run the program
+     *
+     * @param args arguments received via console
+     */
+    public static void main(String[] args) {
+
+        long startProrgamMilis = System.currentTimeMillis();
+
+        InputReader.openScanner();
+        
+        File file  = new File("system_execution.txt");
+
+        long executionQuantity = 0;
+        
+        if(file.exists()){
+            FileReader reader = null;
+            try {
+                reader = new FileReader(file);
+            } catch (FileNotFoundException e) {
+                System.out.println("\nFicheiro não encontrado\n");
+            }
+            BufferedReader input = new BufferedReader( reader );
+            try { 
+                input.readLine();
+                executionQuantity = Long.parseLong(input.readLine());
+            } catch (IOException e) {
+                System.out.println("\nErro ao ler os valores da data de última execução e número de execuções\n");
+            } finally{
+                try {
+                    input.close();
+                    reader.close();
+                } catch (IOException e) {
+                    System.out.println("\nErro ao fechar a stream de entrada\n");
+                }
+            }
+        }
+        
+        FileWriter writer = null;
+        try {
+            writer = new FileWriter( file );
+        } catch (IOException e) {
+            System.out.println("\nErro ao criar a stream de saída\n");
+        }
+        BufferedWriter output = new BufferedWriter( writer );
+        try {
+            output.write(new SimpleDateFormat("dd-MM-yyyy").format(new Date()) + "\n" + (executionQuantity+1));
+        } catch (IOException e) {
+            System.out.println("\nErro ao gravar o ficheiro com data da última execução e número de execuções\n");
+        } finally{
+            try {
+                output.close();
+                writer.close();
+            } catch (IOException e) {
+                System.out.println("\nErro ao fechar a stream de saída\n");
+            }
+        }
+        System.out.print("\tServidor");
+        try {
+            System.out.println(" - " + InetAddress.getLocalHost().getHostAddress() + "\n");
+        } catch (UnknownHostException e) {
+            System.out.println("\nNão foi possivel obter o endereço deesta máquina\n");
+        }
+        int port = 4000 /*InputReader.readInt("Insira o porto do servidor: ", "\nPorto fora do intervalo permitido (1024-65535), tente novamente\n", 1024, 65535)*/;
+        new ServerThread(port).start();
+        
+        MainViews mainViews = new MainViews();
+        mainViews.showNoManagerMenu();
+        mainViews.showMainMenu();
+
+        InputReader.closeScanner();
+
+        long endProgramMilis = System.currentTimeMillis();
+        Server.printExecutionTime(startProrgamMilis, endProgramMilis);
+
+    }
+
+    /**
+     * get the user logged in
+     *
+     * @return the user logged in
+     */
+    public static User getLoggedUser() {
+        return Server.loggedUser;
+    }
+
+    /**
+     * Assigns the user that logged in, inserts a log and prints a welcome message
+     *
+     * @param loggedUser the user logged in
+     */
+    public static void login(User loggedUser) {
+        Server.loggedUser = loggedUser;
+        new ManageLogs().insertLog(new Log(Server.loggedUser.getId(), 
+                        new SimpleDateFormat("yyyy-mm-dd").format(new Date()), 
+                        Server.loggedUser.getUsername() + " Iniciou Sessão"));
+        System.out.println("\nBem vindo " + Server.loggedUser.getUsername() + "\n");
+    }
+
+    /**
+     * Logout by inserting a log, print a goodbye message and assigns user as null
+     */
+    public static void logout() {
+        if (Server.getLoggedUser() != null) {
+            new ManageLogs().insertLog(new Log(Server.getLoggedUser().getId(),
+                new SimpleDateFormat("yyyy-mm-dd").format(new Date()),
+                Server.getLoggedUser().getUsername() + " Terminou Sessão"));
+            System.out.println("Adeus " + Server.getLoggedUser().getUsername() + "\n");
+        }
+        Server.loggedUser = null;
+    }
+
+    /**
+     * Prints the execution time of the program
+     *
+     * @param startTime the time in miliseconds that the program had when
+     * started
+     * @param endTime the time in miliseconds that the program had when finished
+     */
+    public static void printExecutionTime(long startTime, long endTime) {
+        SimpleDateFormat datetimeFormat = new SimpleDateFormat("EEEE';' yyyy-MM-dd HH:mm:ss");
+
+        System.out.println("Início do processo: " + datetimeFormat.format(new Date(startTime)));
+        System.out.println("Fim do processo: " + datetimeFormat.format(new Date(endTime)));
+        long miliseconds = endTime - startTime, seconds = miliseconds / 1000, minutes = seconds / 60, hours = minutes / 60;
+        System.out.println("Tempo de execução: " + miliseconds + " Milissegundos (" + seconds + " Segundos; " + minutes + " Minutos; " + hours + " Horas)");
+    }
+
+}
