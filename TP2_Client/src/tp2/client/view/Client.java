@@ -52,10 +52,9 @@ public class Client {
             e.printStackTrace();
             return;
         }
-
+        String command;
         try {
-            String inputMsg = input.readLine();
-            System.out.println(inputMsg);
+            command = input.readLine();
         } catch (IOException e) {
             e.printStackTrace();
             return;
@@ -63,24 +62,38 @@ public class Client {
         
         output.println("<login> <hello>;");
         
-        String inputMsg = null;
         try {
-            inputMsg = input.readLine();
+            command = input.readLine();
         } catch (IOException e) {
             e.printStackTrace();
+            return;
         }
         
-        System.out.println(inputMsg);
-        
         System.out.println("Conexão estabelecida\n");
+        
+        boolean loggedIn;
         
         do{
             String username = InputReader.readString("Nome de utilizador: ");
             String password = InputReader.readString("Palavra Passe: ");
+            System.out.println();
             
             output.println("<login> <autenticar> <" + username + "," + password + ">;");
             
-        }while(false);
+            try {
+                command = input.readLine();
+                loggedIn = command.equals("<login> <autenticar> <success>;");
+                if(!loggedIn){
+                    System.out.println("Não autenticado, tente novamente\n");
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                return;
+            }
+            
+        }while(!loggedIn);
+        
+        System.out.println("Autenticado com sucesso\n");
         
         int option;
         do{
@@ -90,9 +103,11 @@ public class Client {
                 case 1:
                     break;
                 case 0:
+                    output.println("<login> <bye>;");
                     break;
                     
                 default:
+                    System.out.println("\nOpção inválida, tente novamente\n");
                     break;
             }
         }while(option != 0);

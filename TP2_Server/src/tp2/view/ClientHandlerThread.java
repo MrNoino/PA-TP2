@@ -7,6 +7,8 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import tp2.controller.ManageUsers;
+import tp2.model.User;
 
 public class ClientHandlerThread extends Thread{
     
@@ -32,25 +34,55 @@ public class ClientHandlerThread extends Thread{
             this.output.println("<login> <hello>;");
             try {
                 command = this.input.readLine();
-                System.out.println(command);
             } catch (IOException e) {
                 e.printStackTrace();
+                this.closeSocket();
+                return;
             }
         }while(!command.equals("<login> <hello>;"));
         
         this.output.println("<login> <ack>;");
-
-        try {
-            command = this.input.readLine();
-        } catch (IOException e) {
-            e.printStackTrace();
-            return;
-        }
         
-        String[] commandParts = command.replace("<", "").replace(">","").replace(";", "").split(" ");
-        for(String s: commandParts)
-            System.out.println(s);
+        ManageUsers manageUsers = new ManageUsers();
+        User user;
+        
+        do{
+            try {
+                command = this.input.readLine();
+            } catch (IOException e) {
+                e.printStackTrace();
+                this.closeSocket();
+                return;
+            }
+
+            String[] commandParts = command.replace("<", "").replace(">","").replace(";", "").replace(",", " ").split(" ");
+                
+            user = manageUsers.login(commandParts[2], commandParts[3]);
             
+            if(user == null || user.getRoleId() != 3)
+                this.output.println("<login> <autenticar> <fail>;");
+            
+            
+        }while(user == null || user.getRoleId() != 3);
+        
+        this.output.println("<login> <autenticar> <success>;");
+        
+        boolean exit;
+        do{
+            try {
+                command = this.input.readLine();
+                exit = command.equals("<login> <bye>;");
+                System.out.println(command);
+            } catch (IOException e) {
+                e.printStackTrace();
+                this.closeSocket();
+                return;
+            }
+        }while(!exit);
+        System.out.println("\n" + this.socket.getInetAddress().getHostAddress() 
+                                + ":" 
+                                + this.socket.getPort() 
+                                + " desconectou-se\n");
     }
     
     private void closeSocket(){

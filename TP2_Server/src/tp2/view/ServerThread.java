@@ -34,10 +34,7 @@ public class ServerThread extends Thread{
             System.out.println("\n" + socket.getInetAddress().getHostAddress() 
                                 + ":" 
                                 + socket.getPort() 
-                                + " conectou-se a " 
-                                + socket.getLocalAddress().getHostAddress() 
-                                + ":"
-                                + socket.getLocalPort());
+                                + " conectou-se\n");
             
             new ClientHandlerThread(socket).start();
             
