@@ -43,6 +43,7 @@ public class ManageAuthors {
             return new Author(resultSet.getLong("id"), 
                     resultSet.getString("name"), 
                     resultSet.getString("username"), 
+                    resultSet.getString("password"),
                     resultSet.getString("email"), 
                     resultSet.getBoolean("active"), 
                     resultSet.getBoolean("deleted"), 

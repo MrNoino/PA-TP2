@@ -7,8 +7,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import tp2.controller.ManageLogs;
@@ -79,14 +77,6 @@ public class Server {
                 System.out.println("\nErro ao fechar a stream de saída\n");
             }
         }
-        System.out.print("\tServidor");
-        try {
-            System.out.println(" - " + InetAddress.getLocalHost().getHostAddress() + "\n");
-        } catch (UnknownHostException e) {
-            System.out.println("\nNão foi possivel obter o endereço deesta máquina\n");
-        }
-        int port = 4000 /*InputReader.readInt("Insira o porto do servidor: ", "\nPorto fora do intervalo permitido (1024-65535), tente novamente\n", 1024, 65535)*/;
-        new ServerThread(port).start();
         
         MainViews mainViews = new MainViews();
         mainViews.showNoManagerMenu();

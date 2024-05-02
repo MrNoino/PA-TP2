@@ -1,5 +1,7 @@
 package tp2.view;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
@@ -93,8 +95,9 @@ public class MainViews {
                     + "1. Iniciar Sessão\n"
                     + "2. Registar Utilizador\n"
                     + "3. Alterar parâmetros de acesso à base de dados\n"
+                    + "4. Ser servidor\n"
                     + "0. Sair\n\n"
-                    + "Escolha: ", "\nOpção inválida, tente novamente\n", 0, 3);
+                    + "Escolha: ", "\nOpção inválida, tente novamente\n", 0, 4);
             System.out.println();
 
             switch (option) {
@@ -106,6 +109,9 @@ public class MainViews {
                 }
                 case 3 -> {
                     this.showChangeDatabasePropertiesMenu();
+                }
+                case 4 ->{
+                    this.server();
                 }
                 case 0 -> {
                     break;
@@ -247,5 +253,24 @@ public class MainViews {
         } else {
             System.err.println("\nErro ao alterar as propriedades\n");
         }
+    }
+    
+    private void server(){
+        System.out.print("\tServidor");
+        try {
+            System.out.println(" - " + InetAddress.getLocalHost().getHostAddress() + "\n");
+        } catch (UnknownHostException e) {
+            System.out.println("Não foi possivel obter o endereço desta máquina");
+        }
+        int port = 4000 /*InputReader.readInt("Insira o porto do servidor: ", "\nPorto fora do intervalo permitido (1024-65535), tente novamente\n", 1024, 65535)*/;
+        ServerThread serverThread = new ServerThread(port);
+        serverThread.start();
+        
+        String msg;
+        do{
+            msg = InputReader.readString("Digite \"sair\" para fechar o servidor\n");
+        }while(!msg.toLowerCase().equals("sair"));
+        
+        serverThread.close();
     }
 }

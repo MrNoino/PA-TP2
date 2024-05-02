@@ -5,22 +5,23 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import tp2.controller.ManageAuthors;
 import tp2.controller.ManageUsers;
+import tp2.model.Author;
 import tp2.model.User;
 
-public class ClientHandlerThread extends Thread{
-    
+public class ClientHandlerThread extends Thread {
+
     private Socket socket;
     private PrintWriter output;
     private BufferedReader input;
-    
-    public ClientHandlerThread(Socket socket){
+    private User user;
+
+    public ClientHandlerThread(Socket socket) {
         this.socket = socket;
     }
-    
-    public void run(){
+
+    public void run() {
         try {
             this.output = new PrintWriter(this.socket.getOutputStream(), true);
             this.input = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
@@ -30,8 +31,8 @@ public class ClientHandlerThread extends Thread{
             return;
         }
         String command = null;
-        do{
-            this.output.println("<login> <hello>;");
+        do {
+            this.output.println("<servidor> <hello>;");
             try {
                 command = this.input.readLine();
             } catch (IOException e) {
@@ -39,14 +40,13 @@ public class ClientHandlerThread extends Thread{
                 this.closeSocket();
                 return;
             }
-        }while(!command.equals("<login> <hello>;"));
-        
-        this.output.println("<login> <ack>;");
-        
+        } while (!command.equals("<cliente> <hello>;"));
+
+        this.output.println("<servidor> <ack>;");
+
         ManageUsers manageUsers = new ManageUsers();
-        User user;
-        
-        do{
+        boolean login;
+        do {
             try {
                 command = this.input.readLine();
             } catch (IOException e) {
@@ -55,52 +55,83 @@ public class ClientHandlerThread extends Thread{
                 return;
             }
 
-            String[] commandParts = command.replace("<", "").replace(">","").replace(";", "").replace(",", " ").split(" ");
-                
-            user = manageUsers.login(commandParts[2], commandParts[3]);
+            String[] commandParts = command.replace("<", "").replace(">", "").replace(";", "").replace(",", " ").split(" ");
+
+            this.user = manageUsers.login(commandParts[2], commandParts[3]);
+            login = this.user != null && this.user.getRoleId() == 3 && this.user.isActive();
             
-            if(user == null || user.getRoleId() != 3)
-                this.output.println("<login> <autenticar> <fail>;");
-            
-            
-        }while(user == null || user.getRoleId() != 3);
-        
-        this.output.println("<login> <autenticar> <success>;");
-        
+            if (!login) {
+                this.output.println("<servidor> <autenticar> <fail>;");
+            }
+
+        } while (!login);
+
+        this.output.println("<servidor> <autenticar> <success>;");
+
         boolean exit;
-        do{
+        do {
             try {
                 command = this.input.readLine();
-                exit = command.equals("<login> <bye>;");
-                System.out.println(command);
+                exit = command.equals("<cliente> <bye>;");
+                if (exit) {
+                    continue;
+                }
             } catch (IOException e) {
                 e.printStackTrace();
                 this.closeSocket();
-                return;
+                break;
             }
-        }while(!exit);
-        System.out.println("\n" + this.socket.getInetAddress().getHostAddress() 
-                                + ":" 
-                                + this.socket.getPort() 
-                                + " desconectou-se\n");
+
+            switch (command) {
+                case "<cliente> <info>;":
+                    System.out.println(this.socket.getInetAddress().getHostAddress()
+                            + ":" + this.socket.getPort() 
+                            + " consultou os dados pessoais");
+                    ManageAuthors manageAuthors = new ManageAuthors();
+
+                    Author author = manageAuthors.getAuthor(this.user.getId());
+
+                    if (author != null)
+                        this.output.println("<servidor> <info> <"
+                                + author.getUsername() + ","
+                                + author.getPassword() + ","
+                                + author.getName() + ","
+                                + author.getEmail() + ","
+                                + author.isActive() + ","
+                                + author.getNif() + ","
+                                + author.getPhone() + ","
+                                + author.getAddress()
+                                + ">;");
+                    else
+                        this.output.println("<servidor> <info> <fail>;");
+                    
+                    break;
+                default:
+                    throw new AssertionError();
+            }
+        } while (!exit);
+        System.out.println(this.socket.getInetAddress().getHostAddress()
+                + ":"
+                + this.socket.getPort()
+                + " desconectou-se");
     }
-    
-    private void closeSocket(){
-        if(this.output != null){
-            try{
+
+    private void closeSocket() {
+        if (this.output != null) {
+            try {
                 this.output.close();
-            } catch(Exception e){
+            } catch (Exception e) {
                 System.out.println("Erro ao fechar a stream de saída");
             }
         }
-        if(this.input != null){
+        if (this.input != null) {
             try {
                 this.input.close();
             } catch (IOException e) {
                 System.out.println("Erro ao fechar a stream de entrada");
             }
         }
-        if(this.socket != null){
+        if (this.socket != null) {
             try {
                 this.socket.close();
             } catch (IOException e) {
