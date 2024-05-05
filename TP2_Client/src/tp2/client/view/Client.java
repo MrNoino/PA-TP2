@@ -115,7 +115,7 @@ public class Client {
                     break;
 
                 case 2:
-                    
+                    menu.updatePersonalData();
                     break;
                 case 3:
                     

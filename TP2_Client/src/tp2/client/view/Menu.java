@@ -46,6 +46,35 @@ public class Menu {
     }
     
     public void updatePersonalData(){
+        String username = InputReader.readString("Nome de utilizador: "),
+                password = InputReader.readString("Palavra Passe: "),
+                name = InputReader.readString("Nome: "),
+                email = InputReader.readString("Email: ", "\nEmail inválido, tente novamente\n", "[\\w._-]{3,}@[\\w_]{3,}.\\w{2,5}"),
+                nif = InputReader.readString("NIF: ", "\nNIF inválido, tente novamente\n", "\\d{9}"),
+                phone = InputReader.readString("Telemóvel: ", "\nTelemóvel inválido, tente novamente\n", "[239]\\d{8}"),
+                address = InputReader.readString("Morada: ");
         
+        output.println("<cliente> <update> <"
+                + username + ","
+                + password + ","
+                + name + ","
+                + email + ","
+                + "true,"
+                + nif + ","
+                + phone + ","
+                + address + ">;"
+        );
+        String command;
+        try {
+            command = input.readLine();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return;
+        }
+        if(command.equals("<servidor> <update> <ok>;")){
+            System.out.println("\nAtualizado com sucesso\n");
+        }else{
+            System.out.println("\nNão atualizado\n");
+        }
     }
 }
