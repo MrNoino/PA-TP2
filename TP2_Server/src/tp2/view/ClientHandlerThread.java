@@ -16,7 +16,7 @@ public class ClientHandlerThread extends Thread {
     private Socket socket;
     private PrintWriter output;
     private BufferedReader input;
-    private Author author;
+    private static Author author;
 
     public ClientHandlerThread(Socket socket) {
         this.socket = socket;
@@ -33,7 +33,9 @@ public class ClientHandlerThread extends Thread {
         }
         String command = null;
         do {
-            this.output.println("<servidor> <hello>;");
+            command = "<servidor> <hello>;";
+            this.output.println(command);
+            this.log(command);
             try {
                 command = this.input.readLine();
             } catch (IOException e) {
@@ -42,8 +44,10 @@ public class ClientHandlerThread extends Thread {
                 return;
             }
         } while (!command.equals("<cliente> <hello>;"));
-
-        this.output.println("<servidor> <ack>;");
+        this.log(command);
+        command = "<servidor> <ack>;";
+        this.output.println(command);
+        this.log(command);
 
         ManageUsers manageUsers = new ManageUsers();
         boolean login;
@@ -51,6 +55,7 @@ public class ClientHandlerThread extends Thread {
         do {
             try {
                 command = this.input.readLine();
+                this.log(command);
             } catch (IOException e) {
                 e.printStackTrace();
                 this.closeSocket();
@@ -63,22 +68,26 @@ public class ClientHandlerThread extends Thread {
             login = user != null && user.getRoleId() == 3 && user.isActive();
 
             if (!login) {
-                this.output.println("<servidor> <autenticar> <fail>;");
+                command = "<servidor> <autenticar> <fail>;";
+                this.output.println(command);
+                this.log(command);
             }
 
         } while (!login);
-
-        this.output.println("<servidor> <autenticar> <success>;");
+        command = "<servidor> <autenticar> <success>;";
+        this.output.println(command);
+        this.log(command);
 
         ManageAuthors manageAuthors = new ManageAuthors();
 
-        this.author = manageAuthors.getAuthor(user.getId());
+        author = manageAuthors.getAuthor(user.getId());
 
-        String[] commandParts;
+        Menu menu = new Menu(this.socket, this.output, this.input);
         boolean exit;
         do {
             try {
                 command = this.input.readLine();
+                this.log(command);
                 exit = command.equals("<cliente> <bye>;");
                 if (exit) {
                     continue;
@@ -93,52 +102,16 @@ public class ClientHandlerThread extends Thread {
             }
 
             if (command.equals("<cliente> <info>;")) {
-                if (this.author != null) {
-                    String a = this.author.getUsername() + ","
-                            + this.author.getPassword() + ","
-                            + this.author.getName() + ","
-                            + this.author.getEmail() + ","
-                            + this.author.isActive() + ","
-                            + this.author.getNif() + ","
-                            + this.author.getPhone() + ","
-                            + this.author.getAddress();
-                    this.output.println("<servidor> <info> <"+ a +">;");
-                    System.out.println(this.socket.getInetAddress().getHostAddress()
-                        + ":" + this.socket.getPort()
-                        + " consultou os dados pessoais ("+a+")");
-                } else {
-                    this.output.println("<servidor> <info> <fail>;");
-                }
-
+                menu.getPersonalInfo();
+                //se o comando contém "<cliente> <update> " mais "<" mais 7 palavras incluindo números, pontos e @ mais uma vírgula mais uma palavra seguida de ">;"
             } else if (command.matches("<cliente> <update> <([\\w.@\\s]+,){7}\\w+>;")) {
-                commandParts = command.split("> |,");
-                for (int i = 0; i < commandParts.length; i++) {
-                    commandParts[i] = commandParts[i].replace("<", "").replace(">", "").replace(";", "");
-                }
-                Author a = new Author(this.author.getId(),
-                        commandParts[4],
-                        commandParts[2],
-                        commandParts[3],
-                        commandParts[5],
-                        this.author.isActive(),
-                        this.author.isDeleted(),
-                        this.author.getRoleId(),
-                        commandParts[7],
-                        commandParts[8],
-                        commandParts[9],
-                        this.author.getActivityBeginDate(),
-                        this.author.getLiteraryStyleId());
-                boolean updated = manageAuthors.updateAuthor(a);
-                if (updated) {
-                    this.author = a;
-                    this.output.println("<servidor> <update> <ok>;");
-                    System.out.println(this.socket.getInetAddress().getHostAddress()
-                        + ":" + this.socket.getPort()
-                        + " atualizou os dados pessoais");
-                } else {
-                    this.output.println("<servidor> <update> <fail>;");
-                }
-
+                menu.updatePersonalInfo(command);
+            } else if (command.matches("<cliente> <inserir> <obra> <([\\w\\W\\s]+,){6}[\\w\\W\\s]+>;")) {
+                menu.insertBook(command);
+            }else if(command.matches("<cliente> <pesquisa> <obra> <[\\w\\W\\s]+>;")){
+                menu.getBookByTitle(command);
+            }else if(command.equals("<cliente> <listar> <obra>;")){
+                menu.getBooks();
             }
         } while (!exit);
 
@@ -170,5 +143,19 @@ public class ClientHandlerThread extends Thread {
                 System.out.println("Erro ao fechar o socket");
             }
         }
+    }
+    
+    public static Author getAuthor(){
+        return ClientHandlerThread.author;
+    }
+    
+    public static void setAuthor(Author author){
+        ClientHandlerThread.author = author;
+    }
+    
+    private void log(String content){
+        System.out.println(this.socket.getInetAddress().getHostAddress()
+                + ":" + this.socket.getPort()
+                + "# " + content);
     }
 }

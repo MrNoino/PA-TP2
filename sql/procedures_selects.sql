@@ -204,18 +204,6 @@ BEGIN
 END $$
 DELIMITER ;
 
-DROP PROCEDURE IF EXISTS `PA_TP`.`get_books_by_submission_date` ;
-DELIMITER $$
-CREATE PROCEDURE get_books_by_submission_date(IN a_author_id BIGINT, IN a_submission_date DATE) 
-BEGIN
-	SELECT books.id, books.title as "title", books.subtitle as "subtitle", books.pages as "pages", books.words as "words", books.isbn as "isbn", books.edition as "edition", books.submission_date as "submission_date", books.approval_date as "approval_date", books.literary_style_id as "literary_style_id", books.publication_type as "publication_type", books.author_id  as "author_id"
-	FROM books
-    INNER JOIN authors
-    ON authors.user_id = books.author_id
-    WHERE authors.user_id = a_author_id and books.submission_date = a_submission_date;
-END $$
-DELIMITER ;
-
 DROP PROCEDURE IF EXISTS `PA_TP`.`get_books_by_isbn` ;
 DELIMITER $$
 CREATE PROCEDURE get_books_by_isbn(IN a_author_id BIGINT, IN a_isbn VARCHAR(13)) 
@@ -412,5 +400,17 @@ BEGIN
 	INNER JOIN books 
 	ON reviews.book_id = books.id
     WHERE reviews.status LIKE CONCAT('%', search, '%');
+END$$
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS `PA_TP`.`get_books_by_title`;
+DELIMITER $$
+CREATE PROCEDURE `get_books_by_title`(IN a_author_id BIGINT, IN a_title VARCHAR(256))
+BEGIN
+	SELECT books.id, books.title as "title", books.subtitle as "subtitle", books.pages as "pages", books.words as "words", books.isbn as "isbn", books.edition as "edition", books.submission_date as "submission_date", books.approval_date as "approval_date", books.literary_style_id as "literary_style_id", books.publication_type as "publication_type", books.author_id  as "author_id"
+	FROM books
+    INNER JOIN authors
+    ON authors.user_id = books.author_id
+    WHERE authors.user_id = a_author_id and books.title = a_title;
 END$$
 DELIMITER ;

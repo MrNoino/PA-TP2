@@ -26,6 +26,7 @@ public class ManageBooks {
 
     /**
      * Gets the book from the database with the given id
+     *
      * @param authorId The author id
      * @param bookId The book id
      * @return Book
@@ -40,8 +41,8 @@ public class ManageBooks {
                 return null;
             }
             if (Server.getLoggedUser() != null) {
-                new ManageLogs().insertLog(new Log(Server.getLoggedUser().getId(), 
-                        new SimpleDateFormat("yyyy-mm-dd").format(new Date()), 
+                new ManageLogs().insertLog(new Log(Server.getLoggedUser().getId(),
+                        new SimpleDateFormat("yyyy-mm-dd").format(new Date()),
                         "Pesquisou Obra por ID: " + bookId));
             }
             return new Book(resultSet.getLong("id"),
@@ -65,6 +66,7 @@ public class ManageBooks {
 
     /**
      * Gets the books from the database
+     *
      * @param authorId The author id
      * @param orderField The order field ["title", "submission_date"]
      * @param sortOrder The order for the sorting ["ASC", "DESC"]
@@ -91,8 +93,8 @@ public class ManageBooks {
                 return null;
             }
             if (Server.getLoggedUser() != null) {
-                new ManageLogs().insertLog(new Log(Server.getLoggedUser().getId(), 
-                        new SimpleDateFormat("yyyy-mm-dd").format(new Date()), 
+                new ManageLogs().insertLog(new Log(Server.getLoggedUser().getId(),
+                        new SimpleDateFormat("yyyy-mm-dd").format(new Date()),
                         "Listou Obras"));
             }
             while (resultSet.next()) {
@@ -119,7 +121,8 @@ public class ManageBooks {
 
     /**
      * Gets the books from the database given the submission date
-     * @param authorId  The author id
+     *
+     * @param authorId The author id
      * @param submissionDate The submission date
      * @return A list of books
      */
@@ -132,8 +135,8 @@ public class ManageBooks {
                 return null;
             }
             if (Server.getLoggedUser() != null) {
-                new ManageLogs().insertLog(new Log(Server.getLoggedUser().getId(), 
-                        new SimpleDateFormat("yyyy-mm-dd").format(new Date()), 
+                new ManageLogs().insertLog(new Log(Server.getLoggedUser().getId(),
+                        new SimpleDateFormat("yyyy-mm-dd").format(new Date()),
                         "Pesquisou Obras por Data de Submissão: " + submissionDate));
             }
             while (resultSet.next()) {
@@ -160,6 +163,7 @@ public class ManageBooks {
 
     /**
      * Gets the books from the database given the ISBN
+     *
      * @param authorId The author id
      * @param isbn The book ISBN
      * @return A list of books
@@ -173,8 +177,8 @@ public class ManageBooks {
                 return null;
             }
             if (Server.getLoggedUser() != null) {
-                new ManageLogs().insertLog(new Log(Server.getLoggedUser().getId(), 
-                        new SimpleDateFormat("yyyy-mm-dd").format(new Date()), 
+                new ManageLogs().insertLog(new Log(Server.getLoggedUser().getId(),
+                        new SimpleDateFormat("yyyy-mm-dd").format(new Date()),
                         "Pesquisou Obras por ISBN: " + isbn));
             }
             while (resultSet.next()) {
@@ -201,20 +205,21 @@ public class ManageBooks {
 
     /**
      * Gets the author books from the database
+     *
      * @param authorId The author id
      * @return A list of books
      */
-    public ArrayList<Book> getBooksByAuthor(long authorId){
+    public ArrayList<Book> getBooksByAuthor(long authorId) {
         DbWrapper dbWrapper = new DbWrapper();
         dbWrapper.connect();
-        
+
         ResultSet resultSet = dbWrapper.query("CALL get_books_by_author(?)", new Object[]{authorId});
 
-        try{
+        try {
             if (resultSet == null) {
                 return null;
             }
-            
+
             while (resultSet.next()) {
                 this.books.add(new Book(resultSet.getLong("id"),
                         resultSet.getString("title"),
@@ -230,15 +235,54 @@ public class ManageBooks {
                         resultSet.getInt("author_id")));
             }
             return this.books;
-        }catch(SQLException e){
+        } catch (SQLException e) {
             System.out.println("\nErro ao obter as obras\n");
         }
-        
+
         return null;
     }
-    
-    /** 
+
+    /**
+     * Gets the books from the database given the title
+     *
+     * @param authorId The author id
+     * @param title The book title
+     * @return A list of books
+     */
+    public Book getBookByTitle(long authorId, String title) {
+        DbWrapper dbWrapper = new DbWrapper();
+        dbWrapper.connect();
+        ResultSet resultSet = dbWrapper.query("CALL get_books_by_title(?, ?);", new Object[]{authorId, title});
+        try {
+            if (resultSet == null || !resultSet.next()) {
+                return null;
+            }
+            if (Server.getLoggedUser() != null) {
+                new ManageLogs().insertLog(new Log(Server.getLoggedUser().getId(),
+                        new SimpleDateFormat("yyyy-mm-dd").format(new Date()),
+                        "Pesquisou Obra por Título: " + title));
+            }
+            return new Book(resultSet.getLong("id"),
+                    resultSet.getString("title"),
+                    resultSet.getString("subtitle"),
+                    resultSet.getInt("pages"),
+                    resultSet.getInt("words"),
+                    resultSet.getString("isbn"),
+                    resultSet.getString("edition"),
+                    resultSet.getString("submission_date"),
+                    resultSet.getString("approval_date"),
+                    resultSet.getInt("literary_style_id"),
+                    resultSet.getString("publication_type"),
+                    resultSet.getInt("author_id"));
+        } catch (SQLException e) {
+            System.out.println("\nErro ao obter as obras\n");
+        }
+        return null;
+    }
+
+    /**
      * Checks if any book in the database has the given title
+     *
      * @param title title to search
      * @return Confirms if a book exists with the same title
      */
@@ -250,11 +294,7 @@ public class ManageBooks {
             if (resultSet == null || !resultSet.next()) {
                 return false;
             }
-
-            if (resultSet.getBoolean("exists")) {
-                System.out.println("\nTítulo já em uso\n");
-                return true;
-            }
+            return resultSet.getBoolean("exists");
         } catch (SQLException e) {
             System.out.println("\nErro ao verificar o título\n");
         } finally {
@@ -263,11 +303,12 @@ public class ManageBooks {
         return false;
     }
 
-       /**
-        * Checks if any book in the database as the given ISBN
-        * @param isbn The ISBN
-        * @return Confirms if a book exists with the same ISBN
-        */
+    /**
+     * Checks if any book in the database as the given ISBN
+     *
+     * @param isbn The ISBN
+     * @return Confirms if a book exists with the same ISBN
+     */
     public boolean existsIsbn(String isbn) {
         DbWrapper dbWrapper = new DbWrapper();
         dbWrapper.connect();
@@ -276,11 +317,7 @@ public class ManageBooks {
             if (resultSet == null || !resultSet.next()) {
                 return false;
             }
-
-            if (resultSet.getBoolean("exists")) {
-                System.out.println("\nISBN já em uso\n");
-                return true;
-            }
+            return resultSet.getBoolean("exists");
         } catch (SQLException e) {
             System.out.println("\nErro ao verificar o ISBN\n");
         } finally {
@@ -291,6 +328,7 @@ public class ManageBooks {
 
     /**
      * Insert a book in the database
+     *
      * @param book The book to insert in the database
      * @return Confirms if a book was inserted successfully
      */
@@ -307,8 +345,8 @@ public class ManageBooks {
             book.getAuthorId()}) > 0;
 
         if (inserted && Server.getLoggedUser() != null) {
-            new ManageLogs().insertLog(new Log(Server.getLoggedUser().getId(), 
-                    new SimpleDateFormat("yyyy-mm-dd").format(new Date()), 
+            new ManageLogs().insertLog(new Log(Server.getLoggedUser().getId(),
+                    new SimpleDateFormat("yyyy-mm-dd").format(new Date()),
                     "Inseriu Obra"));
         }
         return inserted;
@@ -332,10 +370,10 @@ public class ManageBooks {
             book.getLiteraryStyleId(),
             book.getPublicationType(),
             book.getAuthorId()}) > 0;
-        
+
         if (updated && Server.getLoggedUser() != null) {
-            new ManageLogs().insertLog(new Log(Server.getLoggedUser().getId(), 
-                    new SimpleDateFormat("yyyy-mm-dd").format(new Date()), 
+            new ManageLogs().insertLog(new Log(Server.getLoggedUser().getId(),
+                    new SimpleDateFormat("yyyy-mm-dd").format(new Date()),
                     "Atualizou Obra (ID: " + book.getId() + ")"));
         }
         return updated;

@@ -75,8 +75,8 @@ public class Client {
         boolean loggedIn;
 
         do {
-            String username = InputReader.readString("Nome de utilizador: ");
-            String password = InputReader.readString("Palavra Passe: ");
+            String username = "joana"/*InputReader.readString("Nome de utilizador: ")*/;
+            String password = "pass"/*InputReader.readString("Palavra Passe: ")*/;
             System.out.println();
 
             output.println("<cliente> <autenticar> <" + username + "," + password + ">;");
@@ -95,7 +95,6 @@ public class Client {
         } while (!loggedIn);
 
         System.out.println("Autenticado com sucesso\n");
-        String[] commandParts;
         int option;
         Menu menu = new Menu(output, input);
         do {
@@ -118,17 +117,17 @@ public class Client {
                     menu.updatePersonalData();
                     break;
                 case 3:
-                    
+                    menu.insertBook();
                     break;
                     
                 case 4:
-                    
+                    menu.getBookByTitle();
                     break;
                 case 5:
                     
                     break;
                 case 6:
-                    
+                    menu.getBooks();
                     break;
                 case 7:
                     

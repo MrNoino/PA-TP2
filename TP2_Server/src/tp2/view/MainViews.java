@@ -88,16 +88,16 @@ public class MainViews {
     }
 
     public void showMainMenu() {
-        int option;
+        int option = 4;
         do {
             
-            option = InputReader.readInt("**** MENU PRINCIPAL ****\n"
+            /*option = InputReader.readInt("**** MENU PRINCIPAL ****\n"
                     + "1. Iniciar Sessão\n"
                     + "2. Registar Utilizador\n"
                     + "3. Alterar parâmetros de acesso à base de dados\n"
                     + "4. Ser servidor\n"
                     + "0. Sair\n\n"
-                    + "Escolha: ", "\nOpção inválida, tente novamente\n", 0, 4);
+                    + "Escolha: ", "\nOpção inválida, tente novamente\n", 0, 4);*/
             System.out.println();
 
             switch (option) {
