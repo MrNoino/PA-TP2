@@ -100,6 +100,8 @@ public class ClientHandlerThread extends Thread {
                 this.closeSocket();
                 break;
             }
+            
+            // Numero de serie \\d+
 
             if (command.equals("<cliente> <info>;")) {
                 menu.getPersonalInfo();
@@ -112,6 +114,10 @@ public class ClientHandlerThread extends Thread {
                 menu.getBookByTitle(command);
             }else if(command.equals("<cliente> <listar> <obra>;")){
                 menu.getBooks();
+            } else if (command.matches("<cliente> <pesquisa> <revisao> <\\d+>;")){
+                menu.getReviewBySerialNumber(command);
+            } else if (command.equals("<cliente> <listar> <revisao>;")){
+                menu.getReviews();
             }
         } while (!exit);
 

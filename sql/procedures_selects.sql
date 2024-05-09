@@ -414,3 +414,24 @@ BEGIN
     WHERE authors.user_id = a_author_id and books.title = a_title;
 END$$
 DELIMITER ;
+
+DROP procedure IF EXISTS `PA_TP`.`get_review_by_serial_number`;
+DELIMITER $$
+CREATE PROCEDURE `get_review_by_serial_number` (IN a_serial_number VARCHAR(128))
+BEGIN
+	SELECT manager_id, reviewer_id, submission_date, elapsed_time, observations, cost, status
+    FROM reviews
+    WHERE serial_number = a_serial_number;
+END$$
+DELIMITER ;
+
+
+DROP procedure IF EXISTS `PA_TP`.`get_author_reviews`;
+DELIMITER $$
+CREATE PROCEDURE `get_author_reviews` (IN a_author_id bigint)
+BEGIN
+	SELECT  manager_id, reviewer_id, submission_date, elapsed_time, observations, cost, status
+    FROM reviews
+    WHERE author_id = a_author_id;
+END$$
+DELIMITER ;

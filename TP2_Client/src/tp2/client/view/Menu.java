@@ -165,6 +165,63 @@ public class Menu {
             System.out.println();
         }
     }
+    
+    public void getReviewBySerialNumber(){
+        String serialNumber = InputReader.readString("Número de série a pesquisar: ");
+        
+        this.output.println("<cliente> <pesquisa> <revisao> <"+ serialNumber +">;");
+        String command;
+        try {
+            command = this.input.readLine();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        if (command.equals("<servidor> <pesquisa> <revisao> <fail>;")) {
+            System.out.println("\nNenhuma revisão encontrada\n");
+        } else if (command.matches("<servidor> <pesquisa> <revisao> <([\\w\\W\\s]+,){6}[\\w\\W\\s]+>;")) {
+            String[] commandParts = this.splitBasicCommand(command);
+
+            System.out.println("\nID Gestor: " + commandParts[3] + "\n"
+                    + "ID Revisor: " + commandParts[4] + "\n"
+                    + "Data de realização: " + commandParts[5] + "\n"
+                    + "Tempo decorrido: " + commandParts[6] + "\n"
+                    + "Observações: " + commandParts[7] + "\n"
+                    + "Custo: " + commandParts[8] + "\n"
+                    + "Estado: " + commandParts[9] + "\n");
+        }
+    }
+    
+    public void getReviews() {
+        this.output.println("<cliente> <listar> <revisao>;");
+        String command;
+        try {
+            command = this.input.readLine();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        if (command.equals("<servidor> <pesquisa> <revisao> <fail>;")) {
+            System.out.println("\nNenhuma revisao encontrada\n");
+        } else {
+            String[] commandParts = this.splitListsCommand(command);
+   
+            System.out.println("| ID Gestor | ID Revisor | Data de realização | Tempo Decorrido | Observações | Custo | Estado ");
+            for(int i = 3; i < commandParts.length; i++){
+                String[] review = commandParts[i].split(",");
+                System.out.println("| " + review[0]
+                        + " | " + review[1] 
+                        + " | " + review[2]
+                        + " | " + review[3]
+                        + " | " + review[4]
+                        + " | " + review[5]
+                        + " | " + review[6] + " |");   
+            }
+            System.out.println();
+        }
+    }
 
     private String[] splitBasicCommand(String command) {
         String[] commandParts = command.split("> |,");

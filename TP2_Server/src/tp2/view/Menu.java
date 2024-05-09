@@ -8,9 +8,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import tp2.controller.ManageAuthors;
 import tp2.controller.ManageBooks;
+import tp2.controller.ManageReviews;
 import tp2.controller.ManageUsers;
 import tp2.model.Author;
 import tp2.model.Book;
+import tp2.model.Review;
 
 public class Menu {
 
@@ -26,8 +28,8 @@ public class Menu {
 
     public void getPersonalInfo() {
         if (ClientHandlerThread.getAuthor() != null) {
-            String a = "<servidor> <info> <" +
-                    ClientHandlerThread.getAuthor().getUsername() + ","
+            String a = "<servidor> <info> <"
+                    + ClientHandlerThread.getAuthor().getUsername() + ","
                     + ClientHandlerThread.getAuthor().getPassword() + ","
                     + ClientHandlerThread.getAuthor().getName() + ","
                     + ClientHandlerThread.getAuthor().getEmail() + ","
@@ -137,7 +139,7 @@ public class Menu {
         ManageBooks manageBooks = new ManageBooks();
         Book book = manageBooks.getBookByTitle(ClientHandlerThread.getAuthor().getId(), commandParts[3]);
 
-        if(book == null){
+        if (book == null) {
             command = "<servidor> <pesquisa> <obra> <fail>;";
             this.output.println(command);
             this.log(command);
@@ -157,6 +159,60 @@ public class Menu {
         this.log(command);
     }
 
+    public void getReviewBySerialNumber(String command) {
+        String[] commandParts = this.splitCommand(command);
+        ManageReviews manageReviews = new ManageReviews();
+
+        Review review = manageReviews.getReviewBySerialNumber(commandParts[3]);
+
+        if (review == null) {
+            command = "<servidor> <pesquisa> <revisao> <fail>;";
+            this.output.println(command);
+            this.log(command);
+            return;
+        }
+
+        command = "<servidor> <pesquisa> <revisao> <"
+                + review.getManagerId() + ","
+                + review.getReviewerId() + ","
+                + review.getSubmissionDate() + ","
+                + review.getElapsedTime() + ","
+                + review.getObservations() + ","
+                + review.getCost() + ","
+                + review.getStatus() + ">;";
+
+        this.output.println(command);
+        this.log(command);
+    }
+
+    public void getReviews() {
+        ManageReviews manageReviews = new ManageReviews();
+        ArrayList<Review> reviews = manageReviews.getReviews(ClientHandlerThread.getAuthor().getId());
+        String r = "";
+
+        if (reviews.isEmpty()) {
+            r = "<servidor> <listar> <revisao> <fail>;";
+            this.output.println(r);
+            this.log(r);
+            return;
+        }
+        for (Review review : reviews) {
+            r += "{"
+                    + review.getManagerId() + ","
+                    + review.getReviewerId() + ","
+                    + review.getSubmissionDate() + ","
+                    + review.getElapsedTime() + ","
+                    + review.getObservations() + ","
+                    + review.getCost() + ","
+                    + review.getStatus()
+                    + "},";
+        }
+        r = r.substring(0, r.length() - 1);
+        r = "<servidor> <listar> <revisao> <" + r + ">;";
+        this.output.println(r);
+        this.log(r);
+    }
+
     private String[] splitCommand(String command) {
         String[] commandParts = command.split("> |,");
         for (int i = 0; i < commandParts.length; i++) {
@@ -166,8 +222,8 @@ public class Menu {
         }
         return commandParts;
     }
-    
-    private void log(String content){
+
+    private void log(String content) {
         System.out.println(this.socket.getInetAddress().getHostAddress()
                 + ":" + this.socket.getPort()
                 + "# " + content);

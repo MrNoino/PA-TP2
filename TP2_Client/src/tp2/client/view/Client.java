@@ -124,13 +124,13 @@ public class Client {
                     menu.getBookByTitle();
                     break;
                 case 5:
-                    
+                    menu.getReviewBySerialNumber();
                     break;
                 case 6:
                     menu.getBooks();
                     break;
                 case 7:
-                    
+                    menu.getReviews();
                     break;  
                 case 0:
                     output.println("<login> <bye>;");
