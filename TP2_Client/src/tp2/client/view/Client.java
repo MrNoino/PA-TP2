@@ -7,16 +7,25 @@ import java.io.PrintWriter;
 import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 
+/**
+ * A class that represents the client main program
+ */
 public class Client {
 
+    /**
+     * Main function to run the program
+     *
+     * @param args arguments received via console
+     */
     public static void main(String[] args) {
         System.out.print("\tCliente");
         try {
             System.out.println(" - " + InetAddress.getLocalHost().getHostAddress() + "\n");
         } catch (UnknownHostException e) {
-            System.out.println("\nNão foi possivel obter o endereço deesta máquina\n");
+            System.out.println("\nNão foi possivel obter o endereço desta máquina\n");
         }
         InputReader.openScanner();
         InetAddress serverAddress = null;
@@ -24,14 +33,14 @@ public class Client {
         boolean validAddress;
         do {
             try {
-                serverAddress = InetAddress.getByName("localhost"/*InputReader.readString("Insira o endereço do servidor: ")*/);
+                serverAddress = InetAddress.getByName(InputReader.readString("Insira o endereço do servidor: "));
                 validAddress = true;
             } catch (UnknownHostException e) {
                 System.out.println("\nEndereço inválido, tente novamente\n");
                 validAddress = false;
             }
         } while (!validAddress);
-        serverPort = 4000 /*InputReader.readInt("Insira o porto do servidor: ", "\nPorto fora do intervalo permitido (1024-65535), tente novamente\n",1024, 65535)*/;
+        serverPort = InputReader.readInt("Insira o porto do servidor: ", "\nPorto fora do intervalo permitido (1024-65535), tente novamente\n",1024, 65535);
         System.out.println();
         Socket socket = null;
         try {
@@ -50,33 +59,34 @@ public class Client {
             input = new BufferedReader(new InputStreamReader(socket.getInputStream()));;
         } catch (IOException e) {
             System.out.println("Erro ao criar as streams de entrada e saída");
-            e.printStackTrace();
             return;
         }
         String command;
         try {
             command = input.readLine();
+        } catch (SocketException e) {
+            System.out.println("Conexão com o servidor perdida");
+            return;
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Erro ao ler a mensagem do servidor");
             return;
         }
-
         output.println("<cliente> <hello>;");
-
         try {
             command = input.readLine();
+        } catch (SocketException e) {
+            System.out.println("Conexão com o servidor perdida");
+            return;
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Erro ao ler a mensagem do servidor");
             return;
         }
-
         System.out.println("Conexão estabelecida\n");
 
         boolean loggedIn;
-
         do {
-            String username = "joana"/*InputReader.readString("Nome de utilizador: ")*/;
-            String password = "pass"/*InputReader.readString("Palavra Passe: ")*/;
+            String username = InputReader.readString("Nome de utilizador: ");
+            String password = InputReader.readString("Palavra Passe: ");
             System.out.println();
 
             output.println("<cliente> <autenticar> <" + username + "," + password + ">;");
@@ -87,8 +97,11 @@ public class Client {
                 if (!loggedIn) {
                     System.out.println("Não autenticado, tente novamente\n");
                 }
+            } catch (SocketException e) {
+                System.out.println("Conexão com o servidor perdida\n");
+                return;
             } catch (IOException e) {
-                e.printStackTrace();
+                System.out.println("Erro ao ler a mensagem do servidor\n");
                 return;
             }
 
@@ -119,7 +132,7 @@ public class Client {
                 case 3:
                     menu.insertBook();
                     break;
-                    
+
                 case 4:
                     menu.getBookByTitle();
                     break;
@@ -131,7 +144,7 @@ public class Client {
                     break;
                 case 7:
                     menu.getReviews();
-                    break;  
+                    break;
                 case 0:
                     output.println("<login> <bye>;");
                     break;

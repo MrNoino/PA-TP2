@@ -8,6 +8,7 @@ public class Review {
     private int randomCode;
     private String serialNumber;
     private String submissionDate;
+    private String approvalDate;
     private String completionDate;
     private int elapsedTime;
     private String observations;
@@ -23,7 +24,8 @@ public class Review {
      * @param aId id of the review
      * @param aRandomCode random code
      * @param aSerialNumber serial number of the review
-     * @param aSubmissionDate submission date of hte review
+     * @param aSubmissionDate submission date of the review
+     * @param aApprovalDate approval date of the review
      * @param aCompletionDate completion date of the review
      * @param aElapsedTime elapsed time to complete the review
      * @param aObservations observations
@@ -34,11 +36,12 @@ public class Review {
      * @param aReviewerId the reviewer id associated to the review
      * @param aStatus status of the review
      */
-    public Review(long aId, int aRandomCode, String aSerialNumber, String aSubmissionDate, String aCompletionDate, int aElapsedTime, String aObservations, float aCost, Book aBook, long aAuthorId, long aManagerId, long aReviewerId, String aStatus) {
+    public Review(long aId, int aRandomCode, String aSerialNumber, String aSubmissionDate, String aApprovalDate, String aCompletionDate, int aElapsedTime, String aObservations, float aCost, Book aBook, long aAuthorId, long aManagerId, long aReviewerId, String aStatus) {
         this.id = aId;
         this.randomCode = aRandomCode;
         this.serialNumber = aSerialNumber;
         this.submissionDate = aSubmissionDate;
+        this.approvalDate = aApprovalDate;
         this.completionDate = aCompletionDate;
         this.elapsedTime = aElapsedTime;
         this.observations = aObservations;
@@ -257,4 +260,20 @@ public class Review {
     public void setStatus(String status) {
         this.status = status;
     } 
+
+    /**
+     * Get the approval date of the review
+     * @return the approval date of the review
+     */
+    public String getApprovalDate() {
+        return approvalDate;
+    }
+
+    /**
+     * Sets the approval date
+     * @param approvalDate aproval date to be assigned
+     */
+    public void setApprovalDate(String approvalDate) {
+        this.approvalDate = approvalDate;
+    }
 }

@@ -1,6 +1,7 @@
 package tp2.view;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.text.SimpleDateFormat;
@@ -14,21 +15,34 @@ import tp2.model.Author;
 import tp2.model.Book;
 import tp2.model.Review;
 
+/**
+ * A class that wraps all the features available for the client
+ */
 public class Menu {
 
     private Socket socket;
     private PrintWriter output;
     private BufferedReader input;
 
+    /**
+     * Class construtor that assigns the socket and the output and input streams
+     * @param socket socket that is connected to the client
+     * @param output output stream to send data
+     * @param input input stream to receive data
+     */
     public Menu(Socket socket, PrintWriter output, BufferedReader input) {
         this.socket = socket;
         this.output = output;
         this.input = input;
     }
 
+    /**
+     * Get and send the personal info of the client
+     */
     public void getPersonalInfo() {
+        String a;
         if (ClientHandlerThread.getAuthor() != null) {
-            String a = "<servidor> <info> <"
+            a = "<servidor> <info> <"
                     + ClientHandlerThread.getAuthor().getUsername() + ","
                     + ClientHandlerThread.getAuthor().getPassword() + ","
                     + ClientHandlerThread.getAuthor().getName() + ","
@@ -42,8 +56,22 @@ public class Menu {
         } else {
             this.output.println("");
         }
+        try {
+            a = this.input.readLine();
+            this.log(a);
+        } catch (IOException e) {
+            this.log("Erro ao obter a mensagem do cliente");
+            return;
+        }
+        a = "<servidor> <ack>;";
+        this.output.println(a);
+        this.log(a);
     }
 
+    /**
+     * Update the personal info of the client
+     * @param command command received by the client
+     */
     public void updatePersonalInfo(String command) {
         String[] commandParts = this.splitCommand(command);
         ManageUsers manageUsers = new ManageUsers();
@@ -76,64 +104,107 @@ public class Menu {
         } else {
             this.output.println("");
         }
+        try {
+            command = this.input.readLine();
+            this.log(command);
+        } catch (IOException e) {
+            this.log("Erro ao obter a mensagem do cliente");
+            return;
+        }
+        command = "<servidor> <ack>;";
+        this.output.println(command);
+        this.log(command);
     }
 
+    /**
+     * Insert a book given by the client
+     * @param command command received by the client
+     */
     public void insertBook(String command) {
         String[] commandParts = this.splitCommand(command);
         ManageBooks manageBooks = new ManageBooks();
         if (manageBooks.existsTitle(commandParts[3]) || manageBooks.existsIsbn(commandParts[8])) {
-            this.output.println("<servidor> <inserir> <obra> <fail>;");
-            return;
-        }
-        boolean inserted = manageBooks.insertBook(new Book(-1,
-                commandParts[3],
-                null,
-                Integer.parseInt(commandParts[6]),
-                Integer.parseInt(commandParts[7]),
-                commandParts[8],
-                commandParts[9],
-                new SimpleDateFormat("yyyy-MM-dd").format(new Date()),
-                null,
-                Integer.parseInt(commandParts[4]),
-                commandParts[5],
-                ClientHandlerThread.getAuthor().getId()));
-        if (inserted) {
-            command = "<servidor> <inserir> <obra> <ok>;";
+            command = "<servidor> <inserir> <obra> <fail>;";
             this.output.println(command);
             this.log(command);
         } else {
-            this.output.println("");
+            boolean inserted = manageBooks.insertBook(new Book(-1,
+                    commandParts[3],
+                    null,
+                    Integer.parseInt(commandParts[6]),
+                    Integer.parseInt(commandParts[7]),
+                    commandParts[8],
+                    commandParts[9],
+                    new SimpleDateFormat("yyyy-MM-dd").format(new Date()),
+                    null,
+                    Integer.parseInt(commandParts[4]),
+                    commandParts[5],
+                    ClientHandlerThread.getAuthor().getId()));
+            if (inserted) {
+                command = "<servidor> <inserir> <obra> <ok>;";
+                this.output.println(command);
+                this.log(command);
+            } else {
+                this.output.println("");
+            }
         }
+        try {
+            command = this.input.readLine();
+            this.log(command);
+        } catch (IOException e) {
+            this.log("Erro ao obter a mensagem do cliente");
+            return;
+        }
+        command = "<servidor> <ack>;";
+        this.output.println(command);
+        this.log(command);
     }
 
+    /**
+     * Get and sends all book of the client
+     */
     public void getBooks() {
         ManageBooks manageBooks = new ManageBooks();
         ArrayList<Book> books = manageBooks.getBooksByAuthor(ClientHandlerThread.getAuthor().getId());
         String b = "";
-        if (books.isEmpty()) {
+        if (books == null || books.isEmpty()) {
             b = "<servidor> <listar> <obra> <fail>;";
             this.output.println(b);
             this.log(b);
+        } else {
+            for (Book book : books) {
+                b += "{"
+                        + book.getTitle() + ","
+                        + book.getLiteraryStyleId() + ","
+                        + book.getPublicationType() + ","
+                        + book.getPages() + ","
+                        + book.getWords() + ","
+                        + book.getIsbn() + ","
+                        + book.getEdition() + ","
+                        + book.getSubmissionDate()
+                        + "},";
+            }
+            b = b.substring(0, b.length() - 1);
+            b = "<servidor> <listar> <obra> <" + b + ">;";
+            this.output.println(b);
+            this.log(b);
+        }
+        try {
+            b = this.input.readLine();
+            this.log(b);
+        } catch (IOException e) {
+            this.log("Erro ao obter a mensagem do cliente");
             return;
         }
-        for (Book book : books) {
-            b += "{"
-                    + book.getTitle() + ","
-                    + book.getLiteraryStyleId() + ","
-                    + book.getPublicationType() + ","
-                    + book.getPages() + ","
-                    + book.getWords() + ","
-                    + book.getIsbn() + ","
-                    + book.getEdition() + ","
-                    + book.getSubmissionDate()
-                    + "},";
-        }
-        b = b.substring(0, b.length() - 1);
-        b = "<servidor> <listar> <obra> <" + b + ">;";
+        b = "<servidor> <ack>; ";
         this.output.println(b);
         this.log(b);
     }
 
+    /**
+     * Get a book by title and send it to the client
+     * @param command command received by the client
+     */
     public void getBookByTitle(String command) {
         String[] commandParts = this.splitCommand(command);
         ManageBooks manageBooks = new ManageBooks();
@@ -143,22 +214,36 @@ public class Menu {
             command = "<servidor> <pesquisa> <obra> <fail>;";
             this.output.println(command);
             this.log(command);
+        } else {
+            command = "<servidor> <pesquisa> <obra> <"
+                    + book.getTitle() + ","
+                    + book.getTitle() + ","
+                    + book.getLiteraryStyleId() + ","
+                    + book.getPublicationType() + ","
+                    + book.getPages() + ","
+                    + book.getWords() + ","
+                    + book.getIsbn() + ","
+                    + book.getEdition() + ","
+                    + book.getSubmissionDate() + ">;";
+            this.output.println(command);
+            this.log(command);
+        }
+        try {
+            command = this.input.readLine();
+            this.log(command);
+        } catch (IOException e) {
+            this.log("Erro ao obter a mensagem do cliente");
             return;
         }
-        command = "<servidor> <pesquisa> <obra> <"
-                + book.getTitle() + ","
-                + book.getTitle() + ","
-                + book.getLiteraryStyleId() + ","
-                + book.getPublicationType() + ","
-                + book.getPages() + ","
-                + book.getWords() + ","
-                + book.getIsbn() + ","
-                + book.getEdition() + ","
-                + book.getSubmissionDate() + ">;";
+        command = "<servidor> <ack>;";
         this.output.println(command);
         this.log(command);
     }
 
+    /**
+     * Get a review by serial number and send it to the client
+     * @param command command received by the client
+     */
     public void getReviewBySerialNumber(String command) {
         String[] commandParts = this.splitCommand(command);
         ManageReviews manageReviews = new ManageReviews();
@@ -169,50 +254,77 @@ public class Menu {
             command = "<servidor> <pesquisa> <revisao> <fail>;";
             this.output.println(command);
             this.log(command);
+        } else {
+
+            command = "<servidor> <pesquisa> <revisao> <"
+                    + review.getManagerId() + ","
+                    + review.getReviewerId() + ","
+                    + review.getCompletionDate() + ","
+                    + review.getElapsedTime() + ","
+                    + review.getObservations() + ","
+                    + review.getCost() + ","
+                    + review.getStatus() + ">;";
+            this.output.println(command);
+            this.log(command);
+        }
+        try {
+            command = this.input.readLine();
+            this.log(command);
+        } catch (IOException e) {
+            this.log("Erro ao obter a mensagem do cliente");
             return;
         }
-
-        command = "<servidor> <pesquisa> <revisao> <"
-                + review.getManagerId() + ","
-                + review.getReviewerId() + ","
-                + review.getSubmissionDate() + ","
-                + review.getElapsedTime() + ","
-                + review.getObservations() + ","
-                + review.getCost() + ","
-                + review.getStatus() + ">;";
-
+        command = "<servidor> <ack>;";
         this.output.println(command);
         this.log(command);
     }
 
+    /**
+     * Get all reviews and send it to the client
+     */
     public void getReviews() {
         ManageReviews manageReviews = new ManageReviews();
         ArrayList<Review> reviews = manageReviews.getReviews(ClientHandlerThread.getAuthor().getId());
         String r = "";
 
-        if (reviews.isEmpty()) {
+        if (reviews == null || reviews.isEmpty()) {
             r = "<servidor> <listar> <revisao> <fail>;";
             this.output.println(r);
             this.log(r);
+        } else {
+            for (Review review : reviews) {
+                r += "{"
+                        + review.getManagerId() + ","
+                        + review.getReviewerId() + ","
+                        + review.getCompletionDate() + ","
+                        + review.getElapsedTime() + ","
+                        + review.getObservations() + ","
+                        + review.getCost() + ","
+                        + review.getStatus()
+                        + "},";
+            }
+            r = r.substring(0, r.length() - 1);
+            r = "<servidor> <listar> <revisao> <" + r + ">;";
+            this.output.println(r);
+            this.log(r);
+        }
+        try {
+            r = this.input.readLine();
+            this.log(r);
+        } catch (IOException e) {
+            this.log("Erro ao obter a mensagem do cliente");
             return;
         }
-        for (Review review : reviews) {
-            r += "{"
-                    + review.getManagerId() + ","
-                    + review.getReviewerId() + ","
-                    + review.getSubmissionDate() + ","
-                    + review.getElapsedTime() + ","
-                    + review.getObservations() + ","
-                    + review.getCost() + ","
-                    + review.getStatus()
-                    + "},";
-        }
-        r = r.substring(0, r.length() - 1);
-        r = "<servidor> <listar> <revisao> <" + r + ">;";
+        r = "<servidor> <ack>;";
         this.output.println(r);
         this.log(r);
     }
 
+    /**
+     * Split the command received from the client
+     * @param command the command to be split
+     * @return the split command
+     */
     private String[] splitCommand(String command) {
         String[] commandParts = command.split("> |,");
         for (int i = 0; i < commandParts.length; i++) {
@@ -223,6 +335,10 @@ public class Menu {
         return commandParts;
     }
 
+    /**
+     * Print the commands and errors from the client by also printing the IP and port of the client
+     * @param content content to be appended on the message
+     */
     private void log(String content) {
         System.out.println(this.socket.getInetAddress().getHostAddress()
                 + ":" + this.socket.getPort()

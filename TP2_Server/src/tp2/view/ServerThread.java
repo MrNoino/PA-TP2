@@ -3,9 +3,10 @@ package tp2.view;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
+/**
+ * A class that represents a thread to accept clients
+ */
 public class ServerThread extends Thread{
     private int port;
     private ServerSocket serverSocket;
@@ -15,7 +16,9 @@ public class ServerThread extends Thread{
         this.close = false;
     }
     
-    @Override
+    /**
+     * Accepts clients, create and start a thread to handle every client
+     */
     public void run(){
         this.serverSocket = null; 
         Socket socket = null;
@@ -45,13 +48,16 @@ public class ServerThread extends Thread{
         }
     }
     
+    /**
+     * Close the server socket
+     */
     public void close(){
         if(this.serverSocket != null)
             try {
                 this.close = true;
                 this.serverSocket.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                System.out.println("Erro ao fechar o servidor");
             }
     }
 }

@@ -55,6 +55,7 @@ public class ManageReviews {
                         resultSet.getString("serial_number"),
                         resultSet.getString("submission_date"),
                         null,
+                        null,
                         -1,
                         null,
                         -1,
@@ -100,6 +101,7 @@ public class ManageReviews {
                         -1,
                         resultSet.getString("serial_number"),
                         resultSet.getString("submission_date"),
+                        null,
                         null,
                         -1,
                         null,
@@ -147,6 +149,7 @@ public class ManageReviews {
                         resultSet.getString("serial_number"),
                         resultSet.getString("submission_date"),
                         null,
+                        null,
                         -1,
                         null,
                         -1,
@@ -192,6 +195,7 @@ public class ManageReviews {
                         -1,
                         resultSet.getString("serial_number"),
                         resultSet.getString("submission_date"),
+                        null,
                         null,
                         -1,
                         null,
@@ -256,6 +260,11 @@ public class ManageReviews {
         return inserted;
     }
 
+    /**
+     * Gets reviews of the author by serial number from the database
+     * @param serialNumber the review's serial number
+     * @return the review
+     */
     public Review getReviewBySerialNumber(String serialNumber) {
         DbWrapper dbWrapper = new DbWrapper();
         dbWrapper.connect();
@@ -271,8 +280,9 @@ public class ManageReviews {
                 return new Review(-1,
                         -1,
                         serialNumber,
-                        resultSet.getString("submission_date"),
                         null,
+                        null,
+                        resultSet.getString("completion_date"),
                         resultSet.getInt("elapsed_time"),
                         resultSet.getString("observations"),
                         resultSet.getFloat("cost"),
@@ -289,6 +299,11 @@ public class ManageReviews {
         return null;
     }
     
+    /**
+     * Gets reviews of the author from the database 
+     * @param authorId id of the author 
+     * @return a list of reviews
+     */
     public ArrayList<Review> getReviews(long authorId){
         DbWrapper dbWrapper = new DbWrapper();
         dbWrapper.connect();
@@ -303,8 +318,9 @@ public class ManageReviews {
                 this.reviews.add(new Review(-1,
                         -1,
                         null,
-                        resultSet.getString("submission_date"),
                         null,
+                        null,
+                        resultSet.getString("completion_date"),
                         resultSet.getInt("elapsed_time"),
                         resultSet.getString("observations"),
                         resultSet.getFloat("cost"),

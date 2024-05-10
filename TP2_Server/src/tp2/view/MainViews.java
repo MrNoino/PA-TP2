@@ -88,16 +88,16 @@ public class MainViews {
     }
 
     public void showMainMenu() {
-        int option = 4;
+        int option;
         do {
             
-            /*option = InputReader.readInt("**** MENU PRINCIPAL ****\n"
+            option = InputReader.readInt("**** MENU PRINCIPAL ****\n"
                     + "1. Iniciar Sessão\n"
                     + "2. Registar Utilizador\n"
                     + "3. Alterar parâmetros de acesso à base de dados\n"
                     + "4. Ser servidor\n"
                     + "0. Sair\n\n"
-                    + "Escolha: ", "\nOpção inválida, tente novamente\n", 0, 4);*/
+                    + "Escolha: ", "\nOpção inválida, tente novamente\n", 0, 4);
             System.out.println();
 
             switch (option) {
@@ -262,7 +262,7 @@ public class MainViews {
         } catch (UnknownHostException e) {
             System.out.println("Não foi possivel obter o endereço desta máquina");
         }
-        int port = 4000 /*InputReader.readInt("Insira o porto do servidor: ", "\nPorto fora do intervalo permitido (1024-65535), tente novamente\n", 1024, 65535)*/;
+        int port = InputReader.readInt("Insira o porto do servidor: ", "\nPorto fora do intervalo permitido (1024-65535), tente novamente\n", 1024, 65535);
         ServerThread serverThread = new ServerThread(port);
         serverThread.start();
         
@@ -270,7 +270,7 @@ public class MainViews {
         do{
             msg = InputReader.readString("Digite \"sair\" para fechar o servidor\n");
         }while(!msg.toLowerCase().equals("sair"));
-        
+        System.out.println();
         serverThread.close();
     }
 }

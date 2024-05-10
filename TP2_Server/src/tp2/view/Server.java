@@ -14,7 +14,7 @@ import tp2.model.Log;
 import tp2.model.User;
 
 /**
- * Class that represents the main program
+ * Class that represents the server main program
  */
 public class Server {
 

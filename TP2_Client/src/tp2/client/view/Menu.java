@@ -3,35 +3,47 @@ package tp2.client.view;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.net.SocketException;
 
+/**
+ * A class that wraps all the features about the client 
+ */
 public class Menu {
 
     private PrintWriter output;
     private BufferedReader input;
 
+    /**
+     * Class constructor that assigns the input and output streams
+     * @param output stream to send data
+     * @param input stream to receive data
+     */
     public Menu(PrintWriter output, BufferedReader input) {
         this.output = output;
         this.input = input;
     }
 
+    /**
+     * Get personal data from the server and display it on console
+     */
     public void getPersonalData() {
         String command;
         this.output.println("<cliente> <info>;");
         try {
             command = this.input.readLine();
-            if (command.equals("<cliente> <info> <fail>;")) {
-                System.out.println("Erro ao obter os dados pessoais\n");
-                return;
-            }
+        } catch(SocketException e){
+            System.out.println("Conexão com o servidor perdida\n");
+            return;
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Erro ao ler a mensagem do servidor\n");
             return;
         }
-        String[] commandParts = this.splitBasicCommand(command);
+        if (command.equals("<cliente> <info> <fail>;")) {
+            System.out.println("Erro ao obter os dados pessoais\n");
+        }else{
+            String[] commandParts = this.splitBasicCommand(command);
 
-        System.out.println("Dados Pessoais\n\n"
+            System.out.println("Dados Pessoais\n\n"
                 + "Nome: " + commandParts[4] + "\n"
                 + "Nome de utilizador: " + commandParts[2] + "\n"
                 + "Email: " + commandParts[5] + "\n"
@@ -39,8 +51,20 @@ public class Menu {
                 + "NIF: " + commandParts[7] + "\n"
                 + "Telefone: " + commandParts[8] + "\n"
                 + "Morada: " + commandParts[9] + "\n");
+        }
+        this.output.println("<cliente> <ack>; ");
+        try {
+            this.input.readLine();
+        } catch(SocketException e){
+            System.out.println("Conexão com o servidor perdida\n");
+        } catch (IOException e) {
+            System.out.println("Erro ao ler a mensagem do servidor\n");
+        }
     }
 
+    /**
+     * Update personal data on the server
+     */
     public void updatePersonalData() {
         String username = InputReader.readString("Nome de utilizador: "),
                 password = InputReader.readString("Palavra Passe: "),
@@ -63,8 +87,11 @@ public class Menu {
         String command;
         try {
             command = input.readLine();
+        } catch(SocketException e){
+            System.out.println("Conexão com o servidor perdida\n");
+            return;
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Erro ao ler a mensagem do servidor\n");
             return;
         }
         if (command.equals("<servidor> <update> <ok>;")) {
@@ -72,8 +99,19 @@ public class Menu {
         } else {
             System.out.println("\nNão atualizado\n");
         }
+        this.output.println("<cliente> <ack>; ");
+        try {
+            this.input.readLine();
+        } catch(SocketException e){
+            System.out.println("Conexão com o servidor perdida\n");
+        } catch (IOException e) {
+            System.out.println("Erro ao ler a mensagem do servidor\n");
+        }
     }
 
+    /**
+     * Insert a book on the server
+     */
     public void insertBook() {
         String title = InputReader.readString("Título da obra: ");
         int literaryStyleId = InputReader.readInt("ID do estilo literário: ");
@@ -95,18 +133,31 @@ public class Menu {
         String command;
         try {
             command = this.input.readLine();
+        } catch(SocketException e){
+            System.out.println("Conexão com o servidor perdida\n");
+            return;
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Erro ao ler a mensagem do servidor\n");
             return;
         }
-
         if (command.equals("<servidor> <inserir> <obra> <ok>;")) {
             System.out.println("\nInserido com sucesso\n");
         } else {
             System.out.println("\nNão inserido\n");
         }
+        this.output.println("<cliente> <ack>; ");
+        try {
+            this.input.readLine();
+        } catch(SocketException e){
+            System.out.println("Conexão com o servidor perdida\n");
+        } catch (IOException e) {
+            System.out.println("Erro ao ler a mensagem do servidor\n");
+        }
     }
 
+    /**
+     * Get a book by searching it by title from the server and display it on console
+     */
     public void getBookByTitle() {
         String title = InputReader.readString("Título da obra a pesquisar: ");
 
@@ -114,14 +165,16 @@ public class Menu {
         String command;
         try {
             command = this.input.readLine();
+        } catch(SocketException e){
+            System.out.println("Conexão com o servidor perdida\n");
+            return;
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Erro ao ler a mensagem do servidor\n");
             return;
         }
-
         if (command.equals("<servidor> <pesquisa> <obra> <fail>;")) {
             System.out.println("\nNenhuma obra encontrada\n");
-        } else if (command.matches("<servidor> <pesquisa> <obra> <([\\w\\W\\s]+,){7}[\\w\\W\\s]+>;")) {
+        }else{
             String[] commandParts = this.splitBasicCommand(command);
 
             System.out.println("\nTitulo: " + commandParts[3] + "\n"
@@ -133,15 +186,29 @@ public class Menu {
                     + "Edição: " + commandParts[9] + "\n"
                     + "Data de submissão: " + commandParts[10] + "\n");
         }
+        this.output.println("<cliente> <ack>; ");
+        try {
+            this.input.readLine();
+        } catch(SocketException e){
+            System.out.println("Conexão com o servidor perdida\n");
+        } catch (IOException e) {
+            System.out.println("Erro ao ler a mensagem do servidor\n");
+        }
     }
 
+    /**
+     * Get all books related to the author from the server and display it on console
+     */
     public void getBooks() {
         this.output.println("<cliente> <listar> <obra>;");
         String command;
         try {
             command = this.input.readLine();
+        } catch(SocketException e){
+            System.out.println("Conexão com o servidor perdida\n");
+            return;
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Erro ao ler a mensagem do servidor\n");
             return;
         }
 
@@ -164,23 +231,38 @@ public class Menu {
             }
             System.out.println();
         }
+        
+        this.output.println("<cliente> <ack>; ");
+        try {
+            this.input.readLine();
+        } catch(SocketException e){
+            System.out.println("Conexão com o servidor perdida\n");
+        } catch (IOException e) {
+            System.out.println("Erro ao ler a mensagem do servidor\n");
+        }
     }
     
+    /**
+     * Get a review by searching it by the serial number from the server and display it on console
+     */
     public void getReviewBySerialNumber(){
-        String serialNumber = InputReader.readString("Número de série a pesquisar: ");
+        long serialNumber = InputReader.readLong("Número de série a pesquisar: ");
         
         this.output.println("<cliente> <pesquisa> <revisao> <"+ serialNumber +">;");
         String command;
         try {
             command = this.input.readLine();
+        } catch(SocketException e){
+            System.out.println("Conexão com o servidor perdida\n");
+            return;
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Erro ao ler a mensagem do servidor\n");
             return;
         }
 
         if (command.equals("<servidor> <pesquisa> <revisao> <fail>;")) {
             System.out.println("\nNenhuma revisão encontrada\n");
-        } else if (command.matches("<servidor> <pesquisa> <revisao> <([\\w\\W\\s]+,){6}[\\w\\W\\s]+>;")) {
+        } else {
             String[] commandParts = this.splitBasicCommand(command);
 
             System.out.println("\nID Gestor: " + commandParts[3] + "\n"
@@ -191,24 +273,38 @@ public class Menu {
                     + "Custo: " + commandParts[8] + "\n"
                     + "Estado: " + commandParts[9] + "\n");
         }
+        this.output.println("<cliente> <ack>; ");
+        try {
+            this.input.readLine();
+        } catch(SocketException e){
+            System.out.println("Conexão com o servidor perdida\n");
+        } catch (IOException e) {
+            System.out.println("Erro ao ler a mensagem do servidor\n");
+        }
     }
     
+    /**
+     * Get all reviews of the author from the server and display it on console
+     */
     public void getReviews() {
         this.output.println("<cliente> <listar> <revisao>;");
         String command;
         try {
             command = this.input.readLine();
+        } catch(SocketException e){
+            System.out.println("Conexão com o servidor perdida\n");
+            return;
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Erro ao ler a mensagem do servidor\n");
             return;
         }
 
-        if (command.equals("<servidor> <pesquisa> <revisao> <fail>;")) {
+        if (command.equals("<servidor> <listar> <revisao> <fail>;")) {
             System.out.println("\nNenhuma revisao encontrada\n");
         } else {
             String[] commandParts = this.splitListsCommand(command);
    
-            System.out.println("| ID Gestor | ID Revisor | Data de realização | Tempo Decorrido | Observações | Custo | Estado ");
+            System.out.println("| ID Gestor | ID Revisor | Data de realização | Tempo Decorrido | Observações | Custo | Estado |");
             for(int i = 3; i < commandParts.length; i++){
                 String[] review = commandParts[i].split(",");
                 System.out.println("| " + review[0]
@@ -221,8 +317,23 @@ public class Menu {
             }
             System.out.println();
         }
+        this.output.println("<cliente> <ack>; ");
+        try {
+            this.input.readLine();
+        } catch(SocketException e){
+            System.out.println("Conexão com o servidor perdida\n");
+        } catch (IOException e) {
+            System.out.println("Erro ao ler a mensagem do servidor\n");
+        }
     }
 
+    
+     
+    /**
+     * Split the command that doesn't have a list of items received from the server
+     * @param command the command to be split
+     * @return the split command
+     */
     private String[] splitBasicCommand(String command) {
         String[] commandParts = command.split("> |,");
         for (int i = 0; i < commandParts.length; i++) {
@@ -233,6 +344,11 @@ public class Menu {
         return commandParts;
     }
 
+    /**
+     * Split the command that does have a list of items received from the server
+     * @param command the command to be split
+     * @return the split command
+     */
     private String[] splitListsCommand(String command) {
         String[] commandParts = command.split("> |},");
         for (int i = 0; i < commandParts.length; i++) {

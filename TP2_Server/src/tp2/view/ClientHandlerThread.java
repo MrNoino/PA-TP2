@@ -11,6 +11,9 @@ import tp2.controller.ManageUsers;
 import tp2.model.Author;
 import tp2.model.User;
 
+/**
+ * A class that handles width the requests of the client
+ */
 public class ClientHandlerThread extends Thread {
 
     private Socket socket;
@@ -18,10 +21,17 @@ public class ClientHandlerThread extends Thread {
     private BufferedReader input;
     private static Author author;
 
+    /**
+     * Class construtor that assigns the socket
+     * @param socket socket connected to the client
+     */
     public ClientHandlerThread(Socket socket) {
         this.socket = socket;
     }
 
+    /**
+     * Handle all the requests from the client
+     */
     public void run() {
         try {
             this.output = new PrintWriter(this.socket.getOutputStream(), true);
@@ -31,7 +41,7 @@ public class ClientHandlerThread extends Thread {
             this.closeSocket();
             return;
         }
-        String command = null;
+        String command;
         do {
             command = "<servidor> <hello>;";
             this.output.println(command);
@@ -39,7 +49,7 @@ public class ClientHandlerThread extends Thread {
             try {
                 command = this.input.readLine();
             } catch (IOException e) {
-                e.printStackTrace();
+                this.log("Erro ao obter a mensagem do cliente");
                 this.closeSocket();
                 return;
             }
@@ -57,7 +67,7 @@ public class ClientHandlerThread extends Thread {
                 command = this.input.readLine();
                 this.log(command);
             } catch (IOException e) {
-                e.printStackTrace();
+                this.log("Erro ao obter a mensagem do cliente");
                 this.closeSocket();
                 return;
             }
@@ -96,24 +106,25 @@ public class ClientHandlerThread extends Thread {
                 this.closeSocket();
                 break;
             } catch (IOException e) {
-                e.printStackTrace();
+                this.log("Erro ao obter a mensagem do cliente");
                 this.closeSocket();
                 break;
             }
-            
-            // Numero de serie \\d+
 
             if (command.equals("<cliente> <info>;")) {
                 menu.getPersonalInfo();
-                //se o comando contém "<cliente> <update> " mais "<" mais 7 palavras incluindo números, pontos e @ mais uma vírgula mais uma palavra seguida de ">;"
+            //se o comando contém "<cliente> <update> " mais "<" mais 7 palavras incluindo números, pontos e @ mais uma vírgula mais uma palavra seguida de ">;"
             } else if (command.matches("<cliente> <update> <([\\w.@\\s]+,){7}\\w+>;")) {
                 menu.updatePersonalInfo(command);
+            //se o comando contém "<cliente> <inserir> <obra> " mais "<" mais 6 conjuntos de carateres de qualquer tipo com uma vírgula mais um conjunto de carateres seguido de ">;"
             } else if (command.matches("<cliente> <inserir> <obra> <([\\w\\W\\s]+,){6}[\\w\\W\\s]+>;")) {
                 menu.insertBook(command);
+            //se o comando contém "<cliente> <pesquisa> <obra> " mais "<" mais 1 conjunto de carateres de qualquer tipo seguido de ">;"
             }else if(command.matches("<cliente> <pesquisa> <obra> <[\\w\\W\\s]+>;")){
                 menu.getBookByTitle(command);
             }else if(command.equals("<cliente> <listar> <obra>;")){
                 menu.getBooks();
+                //se o comando contém "<cliente> <pesquisa> <revisao> " mais "<" mais um número seguido de ">;"
             } else if (command.matches("<cliente> <pesquisa> <revisao> <\\d+>;")){
                 menu.getReviewBySerialNumber(command);
             } else if (command.equals("<cliente> <listar> <revisao>;")){
@@ -127,6 +138,9 @@ public class ClientHandlerThread extends Thread {
                 + " desconectou-se");
     }
 
+    /**
+     * Close the input and output streams and the socket
+     */
     private void closeSocket() {
         if (this.output != null) {
             try {
@@ -151,14 +165,26 @@ public class ClientHandlerThread extends Thread {
         }
     }
     
+    /**
+     * Get the author logged in
+     * @return an author
+     */
     public static Author getAuthor(){
         return ClientHandlerThread.author;
     }
     
+    /**
+     * Set the author logged in
+     * @param author an author to be assign
+     */
     public static void setAuthor(Author author){
         ClientHandlerThread.author = author;
     }
     
+    /**
+     * Print the commands and errors from the client by also printing the IP and port of the client
+     * @param content content to be appended on the message
+     */
     private void log(String content){
         System.out.println(this.socket.getInetAddress().getHostAddress()
                 + ":" + this.socket.getPort()
