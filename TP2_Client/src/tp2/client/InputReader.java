@@ -1,4 +1,4 @@
-package tp2.client.view;
+package tp2.client;
 
 import java.text.DateFormat;
 import java.text.ParseException;
