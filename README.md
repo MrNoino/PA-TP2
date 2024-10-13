@@ -1,6 +1,6 @@
 # PA - PW 2 - Publisher Plataform (EN)
 
-This is the pratical work nº2 at the subject Applied Programming. The theme for this project in general is to develop a Desktop Platform for a Publisher. In this case at the TW 2 the main goal is to create an client-server architecture for the author features. 
+This is the pratical work nº2 at the subject Applied Programming. The theme for this project in general is to develop a Desktop Platform for a Publisher. In this case at the TW 2 the main goal is to create an client-server architecture for the author features.
 
 ## Prerequisites
 
